@@ -1,0 +1,19 @@
+{
+  "name": "edams",
+  "version": "0.1.0",
+  "description": "Elasticsearch Data Management System",
+  "main": "bin/edams.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edams/edams.git"
+  },
+  "author": "Jongmin Kim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/edams/edams/issues"
+  },
+  "homepage": "https://github.com/edams/edams"
+}

@@ -33,11 +33,13 @@ io.on('connection', function(socket){
 app.set('views', $EDAMS_HOME + '/server/views');
 app.set('view engine', 'jade');
 
-//partials 디렉토리 파일에 Jade 엔진 적용.
+/*partials 디렉토리 파일에 Jade 엔진 적용.
 app.get('/partials/:partialFile', function(req, res) {
   res.render('partials/' + req.params.partialFile);
 });
+*/
 
+// public 디렉토리 이하 파일은 그대록 읽어들임.
 app.use(express.static($EDAMS_HOME + '/public'));
 app.use(bodyParser.json({limit: '50mb'}))
 

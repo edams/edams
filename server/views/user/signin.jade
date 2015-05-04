@@ -1,0 +1,181 @@
+.container
+  br
+  .col-lg-3.col-md-2
+  .col-lg-6.col-md-8
+    .panel.panel-default
+      .panel-heading
+        h3
+          | 회원 가입
+          small.must
+            | 표시는 필수 항목입니다.
+      .panel-body
+        .row
+          .col-sm-12
+            h4.must
+              | 그룹
+              small
+               | &nbsp;소속된 그룹을 선택하거나 새로 생성하십시오.
+        .row
+          .col-sm-6
+            select.form-control#grp_id(ng-model="user_obj.grp_name" ng-change="user_func.grp_select()")
+              option(ng-repeat="group in grp_name_list")
+                | {{group}}
+          .col-sm-3
+            button.btn.btn-primary.btn-block(type="button" data-toggle="modal" data-target="#grpModal")
+              | 신규그룹 생성
+        .row
+          .col-sm-12
+            h4.must
+              | 계정 유형
+              //small
+               | &nbsp;관리자로 가입하는 경우 시스템 운영자의 승인이 필요합니다.
+        .row
+          .col-sm-3
+            label
+              input(type="radio" ng-model="user_obj.user_type" value="user")
+              | &nbsp;일반 사용자
+          .col-sm-2
+            label
+              input(type="radio" ng-model="user_obj.user_type" value="admin")
+              | &nbsp;관리자
+        .row
+          .col-sm-12
+            h4.must
+              | 아이디
+              small
+                | &nbsp;4~20자. 영어, 숫자, '_'
+        .row
+          .col-sm-5(ng-class="{'has-error':user_obj.id.length > 0 && !user_func.chk_id_valid()}")
+            input.form-control(type="text" maxlength=20 ng-model="user_obj.id" ng-change="user_func.chk_id()" placeholder="아이디 (4~20자)")
+          .col-sm-7
+            h5(ng-class="{'text-danger':!user_func.chk_id_valid(),'text-primary':user_func.chk_id_valid()}")
+              | {{user_func.id_validate_text}}
+        .row
+          .col-sm-12
+            h4.must
+              | 비밀번호
+        .row
+          .col-sm-5(ng-class="{'has-error':user_obj.passwd.length < 6 && user_obj.passwd !== ''}")
+            input.form-control(type="password" placeholder="비밀번호 (6자 이상)" ng-model="user_obj.passwd")
+          .col-sm-7
+            h5.text-danger(ng-show="user_obj.passwd.length < 6 && user_obj.passwd !== ''")
+              | 6자 이상 입력하세요
+            h5.text-primary(ng-show="user_obj.passwd.length > 5 && user_obj.passwd !== ''")
+              | 사용 가능한 비밀번호입니다.
+        .row
+          .col-sm-12
+            h4.must
+              | 비밀번호 확인
+        .row
+          .col-sm-5(ng-class="{'has-error':user_obj.passwd !== user_obj.passwd_re}")
+            input.form-control(type="password" placeholder="비밀번호 확인" ng-model="user_obj.passwd_re")
+          .col-sm-7
+            h5.text-danger(ng-show="user_obj.passwd !== user_obj.passwd_re")
+              | 비밀번호가 일치하지 않습니다.
+            h5.text-primary(ng-show="user_obj.passwd === user_obj.passwd_re && user_obj.passwd_re !=='' ")
+              | 비밀번호가 확인되었습니다.
+        .row
+          .col-sm-12
+            h4.must
+              | 이름(본명)
+        .row
+          .col-sm-5
+            input.form-control(type="text"  placeholder="이름" ng-model="user_obj.name")
+          .col-sm-7.text-danger
+        .row
+          .col-sm-12
+            h4.must
+              | 닉네임
+              small
+                | &nbsp;중복되는 닉네임은 사용할 수 없습니다.
+        .row
+          .col-sm-5
+            input.form-control(type="text"  placeholder="닉네임" ng-model="user_obj.nicname")
+          .col-sm-7.text-danger
+            h5
+              | 이미 존재하는 닉네임입니다.
+        .row
+          .col-sm-12
+            h4.must
+              | 생년월일
+        .row
+          .col-sm-5(ng-class="{'has-error':!user_obj.birthday}")
+            input.form-control(type="date" ng-model="user_obj.birthday")
+          .col-sm-7.text-danger
+            h5(ng-show="!user_obj.birthday")
+              | 날짜 형식 오류입니다. (yyyy-MM-dd)
+        .row
+          .col-sm-12
+            h4
+              | 이메일
+        .row
+          .col-sm-5(ng-class="{'has-error':user_obj.email !=='' && !user_obj.email}")
+            input.form-control(type="email"  placeholder="email@email.com" ng-model="user_obj.email")
+          .col-sm-7.text-danger
+            h5(ng-show="user_obj.email !=='' && !user_obj.email")
+              | 이메일 형식이 올바르지 않습니다.
+        .row
+          .col-sm-12
+            h4
+              | 전화번호
+        .row
+          .col-sm-5
+            input.form-control(type="text"  placeholder="010-1234-5678" ng-model="user_obj.phone")
+          .col-sm-7.text-danger
+        br
+        .row
+          .col-sm-2
+          .col-sm-3
+            button.btn.btn-block.btn-success(ng-click="user_func.signin()")
+              | 회원가입
+          .col-sm-2
+          .col-sm-3
+            button.btn.btn-block.btn-danger(ui-sref="login")
+              | 취소
+.modal.fade#grpModal(data-keyboard="false" data-backdrop="static")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button", data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &#215;
+        h4.modal-title 신규그룹 등록
+      .modal-body
+        .row
+          .col-sm-12
+            h4.must
+              | 그룹 아이디
+              small
+                | &nbsp;4~20자. 영어, 숫자, '_'
+        .row
+          .col-sm-4(ng-class="{'has-error':grp_obj.id.length > 0 && !user_func.chk_grp_id_valid()}")
+            input.form-control(type="text" maxlength=20 ng-model="grp_obj.id" ng-change="user_func.chk_grp_id()" placeholder="아이디 (4~20자)")
+          .col-sm-8
+            h5(ng-class="{'text-danger':!user_func.chk_grp_id_valid(),'text-primary':user_func.chk_grp_id_valid()}")
+              | {{user_func.grp_id_validate_text}}
+        .row
+          .col-sm-12
+            h4.must
+              | 그룹명
+              small
+                | &nbsp;40자 이내.
+        .row
+          .col-sm-5
+            input.form-control(type="text" ng-model="grp_obj.name" maxlength=40 placeholder="그룹명 (40자 이내)")
+        .row
+          .col-sm-12
+            h4
+              | 그룹 설명
+              small
+                | &nbsp;100자 이내.
+        .row
+          .col-sm-10
+            input.form-control(type="text" ng-model="grp_obj.comment" maxlength=100 placeholder="그룹 설명 (100자 이내)")
+      .modal-footer
+        .col-sm-2
+        .col-sm-3
+          button.btn.btn-block.btn-success(ng-disabled="!(user_func.chk_grp_id_valid() && grp_obj.name.length > 0)" ng-click="user_func.grp_add()")
+            | 그룹 추가
+        .col-sm-2
+        .col-sm-3
+          button.btn.btn-block.btn-danger(type="button", data-dismiss="modal", aria-label="Close")
+            | 취소

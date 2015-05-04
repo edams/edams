@@ -1,3 +1,8 @@
-elasticsearch:
+edams:
+  host: "localhost"
+  port: 8162
+
+#엘라스틱서치 서버 정보. EDAMS 설치된 서버 기준.
+es:
   host: "localhost"
   port: 9200

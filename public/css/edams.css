@@ -1,3 +1,25 @@
 .text-red {
   color: #f00;
 }
+
+.container-login{
+  width : 300px;
+  padding-top:60px;
+}
+.container-signin{
+  width : 600px;
+  padding-top:20px;
+}
+
+.body{
+  background-color:#eee;
+}
+
+/*필수항목 표시.*/
+.must {
+    padding-left: 0.5em;
+}
+.must:before {
+    content: "* ";
+    color: red;
+}

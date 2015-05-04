@@ -2,4 +2,6 @@ doctype html
 html
   //head 파일들 불러오기.
   include ../includes/head
-  body
+  body.body(ng-app="edams")
+    div(ui-view="nav")
+    div(ui-view="body")

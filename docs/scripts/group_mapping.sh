@@ -6,6 +6,7 @@ curl -XPUT http://localhost:9200/edams-groups -d '
       "_id" : { "path" : "id" },
       "_timestamp" : { "enabled" : true, "store" : true },
       "properties" : {
+        "register_date" : { "type" : "date" },
         "id" : { "type" : "string", "index" : "not_analyzed" },
         "name" : { "type" : "string", "index" : "not_analyzed" },
         "comment" : { "type" : "string" },

@@ -89,11 +89,13 @@
               small
                 | &nbsp;중복되는 닉네임은 사용할 수 없습니다.
         .row
-          .col-sm-5
-            input.form-control(type="text"  placeholder="닉네임" ng-model="user_obj.nicname")
-          .col-sm-7.text-danger
-            h5
-              | 이미 존재하는 닉네임입니다.
+          .col-sm-5(ng-class="{'has-error':user_func.nicname_exists}")
+            input.form-control(type="text" placeholder="닉네임" ng-model="user_obj.nicname" ng-change="user_func.chk_nicname()")
+          .col-sm-7
+            h5.text-danger(ng-show="user_func.nicname_exists")
+              | 이미 사용중인 닉네임입니다.
+            h5.text-primary(ng-show="!user_func.nicname_exists && user_obj.nicname !== ''")
+              | 사용 가능한 닉네임입니다.
         .row
           .col-sm-12
             h4.must
@@ -126,7 +128,7 @@
         .row
           .col-sm-2
           .col-sm-3
-            button.btn.btn-block.btn-success(ng-click="user_func.signin()")
+            button.btn.btn-block.btn-success(ng-click="user_func.signin()" ng-disabled="!( user_obj.grp_name !== '' && user_func.chk_id_valid() && user_obj.passwd.length > 5 && user_obj.passwd === user_obj.passwd_re && user_obj.name !== '' && !user_func.nicname_exists && user_obj.nicname !== '' && user_obj.birthday)")
               | 회원가입
           .col-sm-2
           .col-sm-3

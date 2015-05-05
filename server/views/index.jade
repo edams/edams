@@ -3,5 +3,7 @@ html
   //head 파일들 불러오기.
   include ../includes/head
   body.body(ng-app="edams")
-    div(ui-view="nav")
-    div(ui-view="body")
+    div(ng-controller="userCtrl")
+      div(ui-view="nav")
+      div(ui-view="user")
+    div(ui-view="content")

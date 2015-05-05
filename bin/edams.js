@@ -34,17 +34,24 @@ io.on('connection', function(socket){
     socket.emit(req_emit,metadata_obj);
   });
 
-  //document 직접 겟.
+  //도큐먼트 직접 겟.
   socket.on('getDocument', function(data){
     es.getDocument(socket, data);
   });
 
+  //도큐먼트 입력
   socket.on('putDocument', function(data){
     es.putDocument(socket, data);
   });
 
+  //검색
   socket.on('search', function(data){
     es.search(socket, data);
+  });
+
+  //로그인
+  socket.on('login', function(data){
+    es.login(socket, data);
   });
 
 });
@@ -53,9 +60,15 @@ io.on('connection', function(socket){
 app.set('views', $EDAMS_HOME + '/server/views');
 app.set('view engine', 'jade');
 
-//partials 디렉토리 파일에 Jade 엔진 적용.
+//하위 디렉토리 파일에 Jade 엔진 적용.
 app.get('/user/:userFile', function(req, res) {
   res.render('user/' + req.params.userFile);
+});
+app.get('/nav/:navFile', function(req, res) {
+  res.render('nav/' + req.params.navFile);
+});
+app.get('/body/:bodyFile', function(req, res) {
+  res.render('body/' + req.params.bodyFile);
 });
 
 

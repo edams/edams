@@ -1,21 +1,22 @@
 (function(){
   var ctrls = angular.module('controllers',['services']);
 
-  ctrls.controller('init', function(socket){
+  //컨트롤러 하나로 합침.
+  ctrls.controller('edamsCtrl', function($rootScope,$scope,$state,socket){
     socket.on('error',function(data){
       toastr.error('오류가 발생하였습니다.', '오류 발생')
       console.log(data);
     });
-  });
 
-  ctrls.controller('userCtrl', function($scope,$http,$state,socket){
     //메타데이타 셋팅.
-    $scope.metadata;
     socket.on('metadata',function(data){
       $scope.metadata = data;
     });
     socket.emit('getMetadata',{emit:'metadata'});
 
+    /*
+    여기서부터 login, signin 컨트롤 시작.
+    */
     $scope.login_obj = {
       id : '',
       passwd : '',
@@ -33,7 +34,7 @@
         } else {
           append_user_obj(data.user_obj);
           sessionStorage["edams_login_obj"] = JSON.stringify($scope.login_obj);
-          $state.go('main');  //이렇게 하면 해당 state로 감. 파라메터 전달 가능.
+          //$state.go('dashboard');  //이렇게 하면 해당 state로 감. 파라메터 전달 가능.
         }
       }
     });
@@ -52,7 +53,12 @@
       user_obj_app.logged_in = true;
       user_obj_app.birthday = new Date(user_obj_app.birthday);
       $scope.user_obj = user_obj_app;
-      console.log($scope.user_obj);
+
+      if(sessionStorage["edams_menu_stat"]){
+        $scope.navbar_func.menu_goto(sessionStorage["edams_menu_stat"]);
+      } else {
+        $scope.navbar_func.menu_goto('dashboard');
+      }
     }
 
     $scope.user_obj = {
@@ -100,11 +106,15 @@
         socket.emit('login',login_io_obj);
       },
       logout : function(){
-        $scope.login_obj.id='';
-        $scope.login_obj.passwd='';
-        var user_obj_tmp = JSON.stringify($scope.user_obj);
-        $scope.user_obj.birthday= new Date(Date.UTC(1980, 0, 1));
-        delete sessionStorage["edams_login_obj"];
+        if(confirm('로그아웃 하시겠습니까?')){
+          $scope.login_obj.id='';
+          $scope.login_obj.passwd='';
+          var user_obj_tmp = JSON.stringify($scope.user_obj);
+          $scope.user_obj.birthday= new Date(Date.UTC(1980, 0, 1));
+          delete sessionStorage["edams_login_obj"];
+          delete sessionStorage["edams_menu_stat"];
+          $state.go('login');
+        }
       },
       grp_id_validate_text: "",
       grp_id_exist: false,
@@ -275,7 +285,7 @@
       index: "edams-groups",
       type: "group",
       query: {
-        size: 100,
+        size: 500,
         sort: "name"
       },
       element: "hits",
@@ -340,13 +350,210 @@
       $scope.user_func.login();
     }
 
+    /*
+    여기까지 login, signin 컨트롤 끝.
+    */
+
+    /*
+    여기서부터 navbar 컨트롤 시작.
+    */
     $scope.navbar_func = {
-      
+      menu_stat: '',
+      menu_goto: function(menu){
+        $state.go(menu);
+        $scope.navbar_func.menu_stat = menu;
+        sessionStorage["edams_menu_stat"] = menu;
+      }
     }
 
-  });
+    /*
+    여기까지 navbar 컨트롤 끝.
+    */
 
-  ctrls.controller('bodyCtrl', function(socket){
+
+    /*
+    여기서부터 project 컨트롤 시작.
+    */
+    $scope.project_add_obj = { register_date: null, id: '', name: '', comment: '', member: [] };
+
+    //$scope.user_obj.id 가 셋팅 완료 된 다음에 하는 행동. 릴로드 하면 바로 안 생겨서 이렇게 해야함.
+    var prj_list_sql_obj;
+    var set_user_id = function(){
+      if(typeof($scope.user_obj.id) === "undefined" || $scope.user_obj.id === null || $scope.user_obj.id === ""){
+        setTimeout(function(){
+          set_user_id();
+        },100);
+      } else {
+        prj_list_sql_obj = {
+          index: "edams-projects",
+          type: "project",
+          query:{
+            size: 100,
+            sort: { "register_date" : "desc" },
+            filter: { and : [ { term: { "member.id" : $scope.user_obj.id } }, { term: { "member.auth" : "project" } } ]
+            }
+          },
+          element: "hits",
+          emit:"getPrjList"
+        }
+        socket.emit('search',prj_list_sql_obj);
+      }
+    };
+    set_user_id();
+
+    var save_chk_prj_id = "";
+    $scope.project_list;  //프로젝트 목록
+    $scope.project_selected;  //선택된 프로젝트
+    //멤버 추가하기 위한 임시 객체.
+    $scope.project_add_member = {
+      grp_id: '', grp_name: '', id: '', name: '', auth: [],
+      auth_list: [
+        { id:'project', name:'프로젝트 관리', checked : false },
+        { id:'dashboard', name:'대시보드 사용', checked : false },
+        { id:'file', name:'파일 업로드', checked : false }
+      ]
+    }
+
+    //프로젝트 ID 체크
+    socket.on('chkPrjId',function(data){
+      //console.log(data);
+      $scope.project_func.prj_id_exists = data;
+    });
+
+    //프로젝트 추가됨. 프로젝트 목록 불러오기 실행.
+    socket.on('prjAdded',function(data){
+      socket.emit('search',prj_list_sql_obj);
+      save_chk_prj_id = data._id;
+      $('#prjAddModal').modal('hide');
+      toastr.success($scope.project_add_obj.name + '프로젝트가 추가되었습니다.', '프로젝트 추가');
+      $scope.project_add_obj = { register_date: null, id: '', name: '', comment: '', member: [] };
+    });
+
+    //프로젝트 목록 불러오기.
+    socket.on('getPrjList', function(data){
+      //console.log(data);
+      $scope.project_list = [];
+      var prj_id_list = [];
+      for(var i=0; i<data.hits.length; i++){
+        $scope.project_list.push(data.hits[i]._source);
+        prj_id_list.push(data.hits[i]._id);
+      }
+      //console.log("$scope.grp_name_list.length: "+$scope.grp_name_list.length);
+      //그룹 저장 후 호출할 때 저장 반영 안 된 경우가 있어서 추가된 그룹 id 조회 후 반영 안 된 경우 다시 호출. 0.5초 타임아웃.
+      if(save_chk_prj_id !== "" && prj_id_list.indexOf(save_chk_prj_id) < 0){
+        setTimeout(function(){
+          socket.emit('search',prj_list_sql_obj);
+        },500);
+      } else {
+        save_chk_prj_id = "";
+      }
+      //console.log($scope.project_list);
+    });
+
+    $scope.project_func = {
+      prj_id_validate_text: "",
+      prj_id_exists: false,
+      chk_prj_id: function(){
+        if($scope.project_add_obj.id.length > 3){
+          var chk_prj_id_obj = {
+            index: "edams-projects",
+            type: "project",
+            id: $scope.project_add_obj.id,
+            element: "found",
+            emit:"chkPrjId"
+          }
+          socket.emit('getDocument',chk_prj_id_obj);
+        }
+      },
+      chk_prj_id_valid: function(){
+        if(!$scope.project_add_obj.id || $scope.project_add_obj.id.length === 0 ){
+          $scope.project_func.prj_id_validate_text = "";
+          return false;
+        } else {
+          if($scope.project_add_obj.id.length > 3){
+            var ck_validation = /^[A-Za-z0-9_]{0,20}$/;
+            if(ck_validation.test($scope.project_add_obj.id)){
+              if($scope.project_func.prj_id_exists){
+                $scope.project_func.prj_id_validate_text = "이미 존재하는 아이디 입니다.";
+                return false;
+              } else {
+                if($scope.metadata.forbidden.project_id.indexOf($scope.project_add_obj.id) > -1){
+                  $scope.project_func.prj_id_validate_text = "사용할 수 없는 아이디 입니다.";
+                  return false;
+                } else {
+                  $scope.project_func.prj_id_validate_text = "사용 가능한 아이디 입니다.";
+                  return true;
+                }
+              }
+            } else {
+              $scope.project_func.prj_id_validate_text = "영어, 숫자, '_' 만 입력 가능합니다.";
+              return false;
+            }
+          } else {
+            if($scope.project_add_obj.id.length > 0){
+              $scope.project_func.prj_id_validate_text = "4자리 이상 입력하세요.";
+            }
+            return false;
+          }
+        }
+      },
+      prj_add: function(){
+        //프로젝트 추가
+        var tmp_member = {
+          grp_id: $scope.user_obj.grp_id,
+          grp_name: $scope.user_obj.grp_name,
+          id: $scope.user_obj.id,
+          name: $scope.user_obj.name,
+          auth: ['project','dashboard','file'],
+          auth_list: [
+            { id:'project', name:'프로젝트 관리', checked : true },
+            { id:'dashboard', name:'대시보드 사용', checked : true },
+            { id:'file', name:'파일 업로드', checked : true }
+          ]
+        }
+        $scope.project_add_obj.member.push(tmp_member);
+        $scope.project_add_obj.owner_id = $scope.user_obj.id,
+        $scope.project_add_obj.owner_name = $scope.user_obj.name
+        var put_prj_obj = {
+          index: "edams-projects",
+          type: "project",
+          data: $scope.project_add_obj,
+          emit: "prjAdded"
+        }
+        socket.emit('putDocument',put_prj_obj);
+      },
+      prj_selected: function(prj_id){
+        if(typeof($scope.project_selected) === "undefined" || $scope.project_selected.id !== prj_id){
+          var prj_sel_get_doc_obj = {
+            index: "edams-projects",
+            type: "project",
+            id: prj_id,
+            element: "_source",
+            emit:"prjSelected"
+          }
+          socket.emit('getDocument',prj_sel_get_doc_obj);
+        }
+      },
+      prj_add_member_grp_sel: function(){
+        project_add_member
+      }
+    }
+
+    //프로젝트 선택
+    socket.on('prjSelected',function(data){
+      $scope.project_selected = data;
+      //console.log(data);
+    });
+
+
+    /*
+    project 컨트롤러 끝.
+    */
+
+    //로그인 안하면 초기 화면으로 이동.
+    if($scope.user_obj.logged_in !== true){
+      $state.go('login');
+    }
 
   });
 

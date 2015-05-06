@@ -1,3 +1,4 @@
 forbidden:
-  grp_id: ["edams"]
-  user_id: ["admin"]
+  grp_id: ["edams","admin","group"]
+  user_id: ["edams","admin","user"]
+  project_id: ["edams","admin","project"]

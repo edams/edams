@@ -3,10 +3,30 @@ nav.navbar.navbar-default
     .navbar-header
       a.navbar-brand
         | EDAMS
-      button.navbar-toggle.collapsed(type="button" data-toggle="collapse" data-target="edams-navbar")
+      button.navbar-toggle.collapsed(type="button" data-toggle="collapse" data-target="#edams-navbar" aria-expanded="false")
         i.glyphicon.glyphicon-align-justify
     #edams-navbar.collapse.navbar-collapse
       ul.nav.navbar-nav
-        li
-          a(ui-sref="dashboard")
+        li(ng-class="{'active':navbar_func.menu_stat==='dashboard'}")
+          a(ng-click="navbar_func.menu_goto('dashboard')")
             | 대시보드
+        li(ng-class="{'active':navbar_func.menu_stat==='project'}")
+          a(ng-click="navbar_func.menu_goto('project')")
+            | 프로젝트
+      ul.nav.navbar-nav.navbar-right
+        li.dropdown
+          a.dropdown-toggle(href="#" data-toggle="dropdown" role="button" aria-expanded="false")
+            span.text-primary
+              | {{user_obj.name}}
+            | &nbsp;님&nbsp;
+            i.glyphicon.glyphicon-triangle-bottom
+          ul.dropdown-menu(role="menu")
+            li
+              a
+                | 사용자 관리
+            li
+              a
+                | 그룹 관리
+        li
+          button.btn.btn-default.navbar-btn(ng-click="user_func.logout()")
+            | 로그아웃

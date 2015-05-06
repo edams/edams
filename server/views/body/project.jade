@@ -1,0 +1,167 @@
+.container
+  .row
+    .col-lg-4
+      .panel.panel-default
+        .panel-heading
+          .row
+            .col-xs-6
+              h4
+                | 프로젝트 목록
+            .col-xs-6
+              button.btn.btn-default.pull-right(type="button" data-toggle="modal" data-target="#prjAddModal")
+                i.glyphicon.glyphicon-plus
+                | &nbsp;추가
+        ul.list-group
+          a.list-group-item(ng-repeat="project in project_list" ng-click="project_func.prj_selected(project.id)" ng-class="{'list-group-item-info':project_selected.id===project.id}")
+            .row
+              .col-xs-4
+                | {{project.name}}
+              .col-xs-8
+                span
+                  i.glyphicon.glyphicon-user
+                | &nbsp;
+                span.label.label-primary.label-as-badge
+                  | {{project.member.length}}
+    .col-lg-8
+      .panel.panel-default
+        .panel-heading
+          .row
+            .col-sm-6
+              h4
+                | 프로젝트 설정
+            .col-sm-6
+              .pull-right(ng-show="project_selected")
+                button.btn.btn-success(type="button")
+                  i.glyphicon.glyphicon-ok
+                  | &nbsp;저장
+                | &nbsp;
+                button.btn.btn-warning(type="button")
+                  i.glyphicon.glyphicon-remove
+                  | &nbsp;취소
+                | &nbsp;
+                button.btn.btn-danger(type="button")
+                  i.glyphicon.glyphicon-trash
+                  | &nbsp;삭제
+        .panel-body
+          h4.text-muted(ng-hide="project_selected")
+            | 프로젝트 목록에서 설정할 프로젝트를 선택하십시오.
+          div(ng-show="project_selected")
+            .row
+              .col-sm-2
+                label
+                  h5
+                    | 프로젝트 아이디
+              .col-sm-3
+                input.form-control(type="text" ng-model="project_selected.id" disabled="disabled")
+              .col-sm-7
+                h5.text-danger
+                  | 아이디는 변경할 수 없습니다.
+            .row
+              .col-sm-2
+                label
+                  h5
+                    | 프로젝트 명
+              .col-sm-3
+                input.form-control(type="text" ng-model="project_selected.name")
+            .row
+              .col-sm-2
+                label
+                  h5
+                    | 프로젝트 설명
+              .col-sm-7
+                input.form-control(type="text" ng-model="project_selected.comment")
+            br
+            div
+              .panel.panel-default
+                .panel-heading
+                  .row
+                    .col-xs-6
+                      h4
+                        | 사용자 정보
+                    .col-xs-6
+                      button.btn.btn-default.pull-right(type="button" data-toggle="modal" data-target="#prjMemberAddModal")
+                        i.glyphicon.glyphicon-plus
+                        | &nbsp;추가
+                ul.list-group
+                  li.list-group-item(ng-repeat="member in project_selected.member")
+                    .row
+                      .col-sm-3.col-xs-8
+                        | [ {{member.grp_name}} ]
+                      .col-sm-2.col-xs-4
+                        | {{member.name}}
+                      .col-sm-7
+                        label(ng-repeat="auth in member.auth_list")
+                          input(type="checkbox" ng-model="auth.checked")
+                          | &nbsp;{{auth.name}}&nbsp;&nbsp;&nbsp;
+.modal.fade#prjAddModal(data-keyboard="false" data-backdrop="static")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button", data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &#215;
+        h4.modal-title 프로젝트 추가
+      .modal-body
+        .row
+          .col-sm-12
+            h4
+              | 프로젝트 아이디
+              small
+                | &nbsp;4~20자. 영어, 숫자, '_'
+        .row
+          .col-sm-4(ng-class="{'has-error':project_add_obj.id.length > 0 && !project_func.chk_prj_id_valid()}")
+            input.form-control(type="text" maxlength=20 ng-model="project_add_obj.id" ng-change="project_func.chk_prj_id()" placeholder="아이디 (4~20자)")
+          .col-sm-8
+            h5(ng-class="{'text-danger':!project_func.chk_prj_id_valid(),'text-primary':project_func.chk_prj_id_valid()}")
+              | {{project_func.prj_id_validate_text}}
+        .row
+          .col-sm-12
+            h4.must
+              | 프로젝트명
+              small
+                | &nbsp;20자 이내.
+        .row
+          .col-sm-5
+            input.form-control(type="text" ng-model="project_add_obj.name" maxlength=20 placeholder="프로젝트 (20자 이내)")
+        .row
+          .col-sm-12
+            h4
+              | 프로젝트 설명
+              small
+                | &nbsp;100자 이내.
+        .row
+          .col-sm-10
+            input.form-control(type="text" ng-model="project_add_obj.comment" maxlength=100 placeholder="프로젝트 설명 (100자 이내)")
+      .modal-footer
+        .col-sm-2
+        .col-sm-3
+          button.btn.btn-block.btn-success(ng-disabled="!(project_func.chk_prj_id_valid() && project_add_obj.name.length > 0)" ng-click="project_func.prj_add()")
+            | 프로젝트 추가
+        .col-sm-2
+        .col-sm-3
+          button.btn.btn-block.btn-danger(type="button", data-dismiss="modal", aria-label="Close")
+            | 취소
+.modal.fade#prjMemberAddModal(data-keyboard="false" data-backdrop="static")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type="button", data-dismiss="modal", aria-label="Close")
+          span(aria-hidden="true") &#215;
+        h4.modal-title 프로젝트 추가
+      .modal-body
+        .row
+          .col-sm-3
+            h4
+              | 소속 그룹
+          .col-sm-5
+            select.form-control(ng-model="prj_add_member.grp_name" ng-change="")
+              option(ng-repeat="group in grp_name_list")
+                | {{group}}
+      .modal-footer
+        .col-sm-2
+        .col-sm-3
+          button.btn.btn-block.btn-success(ng-disabled="!(project_func.chk_prj_id_valid() && project_add_obj.name.length > 0)" ng-click="project_func.prj_add()")
+            | 사용자 추가
+        .col-sm-2
+        .col-sm-3
+          button.btn.btn-block.btn-danger(type="button", data-dismiss="modal", aria-label="Close")
+            | 취소

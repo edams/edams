@@ -30,13 +30,17 @@
       url: "/dashboard",
       views : {
         "content" : { templateUrl: "body/dashboard" },
-        "nav" : {
-          templateUrl: "nav/navbar",
-          data : { menu_selected : "dashboard" }
-        }
+        "nav" : { templateUrl: "nav/navbar" }
       }
     });
 
+    $stateProvider.state('project', {
+      url: "/project",
+      views : {
+        "content" : { templateUrl: "body/project" },
+        "nav" : { templateUrl: "nav/navbar" }
+      }
+    });
 
     //정의되지 않은 url : 우선 이 페이지로 이동.
     $urlRouterProvider.otherwise("/login");
